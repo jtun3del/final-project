@@ -3,6 +3,7 @@ using System.Linq;
 using NorthwindConsole.Model;
 using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 
 
 string path = Directory.GetCurrentDirectory() + "//nlog.config";
@@ -11,6 +12,7 @@ string path = Directory.GetCurrentDirectory() + "//nlog.config";
 
 
 var logger = LogManager.Setup().LoadConfigurationFromFile(path).GetCurrentClassLogger();
+Console.Clear();
 logger.Info("Program started");
 
 do
@@ -48,7 +50,22 @@ do
     category.CategoryName = Console.ReadLine()!;
     Console.WriteLine("Enter the Category Description:");
         category.Description = Console.ReadLine();
-    // todo: save category to the database
+    ValidationContext context = new ValidationContext(category, null, null);
+
+    List<ValidationResult> results = new List<ValidationResult>();
+    var isValid = Validator.TryValidateObject(category, context, results, true);
+    if (isValid)
+    {
+            logger.Info("Validation passed");
+      //todo save catergory to db
+    }
+    if (!isValid)
+    {
+      foreach (var result in results)
+      {
+        logger.Error($"{result.MemberNames.First()} : {result.ErrorMessage}");
+      }
+    }
   }
   else if (String.IsNullOrEmpty(choice))
   {
