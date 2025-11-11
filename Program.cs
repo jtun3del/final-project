@@ -22,6 +22,7 @@ do
   Console.WriteLine("1) Display categories");
   Console.WriteLine("2) Add category");
   Console.WriteLine("3) Display Category and related products");
+  Console.WriteLine("4) Display all Categories and their related products");
   Console.WriteLine("Enter to quit");
   string? choice = Console.ReadLine();
   Console.Clear();
@@ -79,25 +80,38 @@ do
             }
         }
     }
-else if (choice == "3")
+    else if (choice == "3")
+    {
+        var db = new DataContext();
+        var query = db.Categories.OrderBy(p => p.CategoryId);
+        Console.WriteLine("Select the category whose products you want to display:");
+        Console.ForegroundColor = ConsoleColor.DarkRed;
+        foreach (var item in query)
+        {
+            Console.WriteLine($"{item.CategoryId}) {item.CategoryName}");
+        }
+        Console.ForegroundColor = ConsoleColor.White;
+        int id = int.Parse(Console.ReadLine()!);
+        Console.Clear();
+        logger.Info($"CategoryId {id} selected");
+        Category category = db.Categories.Include("Products").FirstOrDefault(c => c.CategoryId == id)!;
+        Console.WriteLine($"{category.CategoryName} - {category.Description}");
+        foreach (Product p in category.Products)
+        {
+            Console.WriteLine($"\t{p.ProductName}");
+        }
+    }
+  else if (choice == "4")
   {
     var db = new DataContext();
-    var query = db.Categories.OrderBy(p => p.CategoryId);
-    Console.WriteLine("Select the category whose products you want to display:");
-    Console.ForegroundColor = ConsoleColor.DarkRed;
+    var query = db.Categories.Include("Products").OrderBy(p => p.CategoryId);
     foreach (var item in query)
     {
-      Console.WriteLine($"{item.CategoryId}) {item.CategoryName}");
-    }
-    Console.ForegroundColor = ConsoleColor.White;
-    int id = int.Parse(Console.ReadLine()!);
-    Console.Clear();
-    logger.Info($"CategoryId {id} selected");
-    Category category = db.Categories.Include("Products").FirstOrDefault(c => c.CategoryId == id)!;
-    Console.WriteLine($"{category.CategoryName} - {category.Description}");
-    foreach (Product p in category.Products)
-    {
-      Console.WriteLine($"\t{p.ProductName}");
+      Console.WriteLine($"{item.CategoryName}");
+      foreach (Product p in item.Products)
+      {
+        Console.WriteLine($"\t{p.ProductName}");
+      }
     }
   }
     else if (String.IsNullOrEmpty(choice))
