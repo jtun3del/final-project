@@ -41,8 +41,14 @@ do
     Console.ForegroundColor = ConsoleColor.White;
   }
   else if (choice == "2")
-  {
+    {
     // Add category
+    Category category = new();
+    Console.WriteLine("Enter Category Name:");
+    category.CategoryName = Console.ReadLine()!;
+    Console.WriteLine("Enter the Category Description:");
+        category.Description = Console.ReadLine();
+    // todo: save category to the database
   }
   else if (String.IsNullOrEmpty(choice))
   {
