@@ -63,7 +63,7 @@ do
     }
     else
     {
-      logger.Error("Not either 1,2, or 3");
+      logger.Error("Not either 1, 2, or 3");
     }
         Console.ForegroundColor = ConsoleColor.White;
     }
