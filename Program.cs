@@ -19,9 +19,9 @@ do
 
 
 {
-  Console.WriteLine("1) Display categories");
+  Console.WriteLine("1) Display products");
   Console.WriteLine("2) Add product");
-  Console.WriteLine("3) Display Category and related products");
+  Console.WriteLine("3) Edit product");
   Console.WriteLine("4) Display all Categories and their related products");
   Console.WriteLine("Enter to quit");
   string? choice = Console.ReadLine();
@@ -123,24 +123,15 @@ do
     }
     else if (choice == "3")
     {
-        var db = new DataContext();
-        var query = db.Categories.OrderBy(p => p.CategoryId);
-        Console.WriteLine("Select the category whose products you want to display:");
-        Console.ForegroundColor = ConsoleColor.DarkRed;
-        foreach (var item in query)
-        {
-            Console.WriteLine($"{item.CategoryId}) {item.CategoryName}");
-        }
-        Console.ForegroundColor = ConsoleColor.White;
-        int id = int.Parse(Console.ReadLine()!);
-        Console.Clear();
-        logger.Info($"CategoryId {id} selected");
-        Category category = db.Categories.Include("Products").FirstOrDefault(c => c.CategoryId == id)!;
-        Console.WriteLine($"{category.CategoryName} - {category.Description}");
-        foreach (Product p in category.Products)
-        {
-            Console.WriteLine($"\t{p.ProductName}");
-        }
+    Console.WriteLine("choose the product you want to edit");
+    var db = new DataContext();
+    var product = GetProduct(db);
+    if (product != null)
+    {
+      AddProduct(product, db, logger);
+      logger.Info("Product added");
+    }
+       
     }
   else if (choice == "4")
   {
@@ -194,4 +185,69 @@ static Supplier? GetSupplier(DataContext db)
     return Supplier;
   }
   return null;
+}
+
+static Product? GetProduct(DataContext db)
+{
+  // display all blogs
+  var product = db.Products.OrderBy(b => b.ProductId);
+  foreach (Product c in product)
+  {
+    Console.WriteLine($"{c.ProductId}: {c.ProductName}");
+  }
+  if (int.TryParse(Console.ReadLine(), out int ProductId))
+  {
+    Product Product = db.Products.FirstOrDefault(b => b.ProductId == ProductId)!;
+    return Product;
+  }
+  return null;
+}
+
+static Product? AddProduct(Product product,DataContext db,NLog.Logger logger)
+{
+  Console.WriteLine("Enter Product Name:");
+    product.ProductName = Console.ReadLine()!;
+    Console.WriteLine("Enter the Supplier:");
+    product.Supplier = GetSupplier(db);
+    Console.WriteLine("Enter Category");
+    product.Category = GetCategory(db);
+    Console.WriteLine("Get quantity");
+    product.QuantityPerUnit = Console.ReadLine();
+    Console.WriteLine("Unit price");
+    product.UnitPrice = int.Parse(Console.ReadLine());
+    Console.WriteLine("units on order");
+    product.UnitsOnOrder = (short?)int.Parse(Console.ReadLine());
+    Console.WriteLine("reorderLevel");
+    product.ReorderLevel = short.Parse(Console.ReadLine());
+    Console.WriteLine("Discontinued (y/n)");
+    product.Discontinued = Console.ReadLine() == "y" ? true : false;
+        ValidationContext context = new ValidationContext(product, null, null);
+
+        List<ValidationResult> results = new List<ValidationResult>();
+        var isValid = Validator.TryValidateObject(product, context, results, true);
+        if (isValid)
+        {
+      //var db = new DataContext();
+      // check for unique name
+      if (db.Products.Any(c => c.ProductName == product.ProductName))
+      {
+        // generate validation error
+        isValid = false;
+        results.Add(new ValidationResult("Name exists", ["ProductName"]));
+      }
+      else
+      {
+        logger.Info("Validation passed");
+        // TODO: save category to db
+        db.AddProduct(product);
+            }
+        }
+        if (!isValid)
+        {
+            foreach (var result in results)
+            {
+                logger.Error($"{result.MemberNames.First()} : {result.ErrorMessage}");
+            }
+        }
+  return product;
 }
