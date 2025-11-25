@@ -20,7 +20,7 @@ do
 
 {
   Console.WriteLine("1) Display categories");
-  Console.WriteLine("2) Add category");
+  Console.WriteLine("2) Add product");
   Console.WriteLine("3) Display Category and related products");
   Console.WriteLine("4) Display all Categories and their related products");
   Console.WriteLine("Enter to quit");
@@ -34,42 +34,83 @@ do
                 .AddJsonFile($"appsettings.json");
         var config = configuration.Build();
         var db = new DataContext();
-        var query = db.Categories.OrderBy(p => p.CategoryName);
-        Console.ForegroundColor = ConsoleColor.Green;
-        Console.WriteLine($"{query.Count()} records returned");
-        Console.ForegroundColor = ConsoleColor.Magenta;
-        foreach (var item in query)
-        {
-            Console.WriteLine($"{item.CategoryName} - {item.Description}");
-        }
+        var query = db.Products.OrderBy(p => p.ProductName);
+        var discontinuedQuery = query.Where(p => p.Discontinued == true);
+        var activeQuery = query.Where(p => p.Discontinued == false);
+        Console.WriteLine("1 for active, 2 for discontinued, 3 for both");
+    var selection = int.Parse(Console.ReadLine());
+    if (selection == 1 || selection == 3)
+    {
+      Console.ForegroundColor = ConsoleColor.Green;
+      Console.WriteLine($"{activeQuery.Count()} records returned");
+      Console.ForegroundColor = ConsoleColor.Magenta;
+      foreach (var item in activeQuery)
+      {
+        Console.WriteLine($"{item.ProductName}");
+      }
+    }
+
+    if (selection == 2 || selection == 3)
+    {
+      // display discontinued.
+      Console.ForegroundColor = ConsoleColor.Green;
+      Console.WriteLine($"{discontinuedQuery.Count()} discontinued records returned");
+      Console.ForegroundColor = ConsoleColor.Yellow;
+      foreach (var item in discontinuedQuery)
+      {
+        Console.WriteLine($"{item.ProductName}");
+      }
+    }
+    else
+    {
+      logger.Error("Not either 1,2, or 3");
+    }
         Console.ForegroundColor = ConsoleColor.White;
     }
     else if (choice == "2")
     {
+
+    var db = new DataContext();
         // Add category
-        Category category = new();
-        Console.WriteLine("Enter Category Name:");
-        category.CategoryName = Console.ReadLine()!;
-        Console.WriteLine("Enter the Category Description:");
-        category.Description = Console.ReadLine();
-        ValidationContext context = new ValidationContext(category, null, null);
+    Product product = new();
+    Console.WriteLine("Enter Product Name:");
+    product.ProductName = Console.ReadLine()!;
+    Console.WriteLine("Enter the Supplier:");
+    product.Supplier = GetSupplier(db);
+    Console.WriteLine("Enter Category");
+    product.Category = GetCategory(db);
+    Console.WriteLine("Get quantity");
+    product.QuantityPerUnit = Console.ReadLine();
+    Console.WriteLine("Unit price");
+    product.UnitPrice = int.Parse(Console.ReadLine());
+    Console.WriteLine("units on order");
+    product.UnitsOnOrder = (short?)int.Parse(Console.ReadLine());
+    Console.WriteLine("reorderLevel");
+    product.ReorderLevel = short.Parse(Console.ReadLine());
+    Console.WriteLine("Discontinued (y/n)");
+    product.Discontinued = Console.ReadLine() == "y" ? true : false; 
+
+
+
+        ValidationContext context = new ValidationContext(product, null, null);
 
         List<ValidationResult> results = new List<ValidationResult>();
-        var isValid = Validator.TryValidateObject(category, context, results, true);
+        var isValid = Validator.TryValidateObject(product, context, results, true);
         if (isValid)
         {
-            var db = new DataContext();
-            // check for unique name
-            if (db.Categories.Any(c => c.CategoryName == category.CategoryName))
-            {
-                // generate validation error
-                isValid = false;
-                results.Add(new ValidationResult("Name exists", ["CategoryName"]));
-            }
-            else
-            {
-                logger.Info("Validation passed");
-                // TODO: save category to db
+      //var db = new DataContext();
+      // check for unique name
+      if (db.Products.Any(c => c.ProductName == product.ProductName))
+      {
+        // generate validation error
+        isValid = false;
+        results.Add(new ValidationResult("Name exists", ["ProductName"]));
+      }
+      else
+      {
+        logger.Info("Validation passed");
+        // TODO: save category to db
+        db.AddProduct(product);
             }
         }
         if (!isValid)
@@ -122,3 +163,35 @@ do
 } while (true);
 
 logger.Info("Program ended");
+
+static Category? GetCategory(DataContext db)
+{
+  // display all blogs
+  var categorie = db.Categories.OrderBy(b => b.CategoryId);
+  foreach (Category c in categorie)
+  {
+    Console.WriteLine($"{c.CategoryId}: {c.CategoryName}");
+  }
+  if (int.TryParse(Console.ReadLine(), out int CategoryId))
+  {
+    Category category = db.Categories.FirstOrDefault(b => b.CategoryId == CategoryId)!;
+    return category;
+  }
+  return null;
+}
+
+static Supplier? GetSupplier(DataContext db)
+{
+  // display all blogs
+  var categorie = db.Suppliers.OrderBy(b => b.SupplierId);
+  foreach (Supplier c in categorie)
+  {
+    Console.WriteLine($"{c.SupplierId}: {c.CompanyName}");
+  }
+  if (int.TryParse(Console.ReadLine(), out int SupplierId))
+  {
+    Supplier Supplier = db.Suppliers.FirstOrDefault(b => b.SupplierId == SupplierId)!;
+    return Supplier;
+  }
+  return null;
+}

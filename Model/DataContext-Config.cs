@@ -40,7 +40,7 @@ public partial class DataContext : DbContext
     var config = configuration.Build();
 
 
-    optionsBuilder.UseSqlServer(@config["Northwind:ConnectionString"]);
+    optionsBuilder.UseSqlServer(@config["NW_Traders:ConnectionString"]);
 
 
   }
