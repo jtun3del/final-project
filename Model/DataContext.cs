@@ -30,6 +30,10 @@ public partial class DataContext : DbContext
     public virtual DbSet<Supplier> Suppliers { get; set; }
 
     public virtual DbSet<Territory> Territories { get; set; }
+    public void AddProduct(Product product) {
+        this.Products.Add(product);
+        this.SaveChanges();
+        }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -157,6 +161,7 @@ public partial class DataContext : DbContext
                 .HasConstraintName("FK_Products_Suppliers");
         });
 
+
         modelBuilder.Entity<Region>(entity =>
         {
             entity.HasKey(e => e.RegionId).IsClustered(false);
@@ -205,3 +210,4 @@ public partial class DataContext : DbContext
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
 }
+
