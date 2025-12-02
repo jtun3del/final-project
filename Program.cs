@@ -70,57 +70,16 @@ do
   else if (choice == "2")
   {
 
+
     var db = new DataContext();
     // Add category
-    Product product = new();
-    Console.WriteLine("Enter Product Name:");
-    product.ProductName = Console.ReadLine()!;
-    Console.WriteLine("Enter the Supplier:");
-    product.Supplier = GetSupplier(db);
-    Console.WriteLine("Enter Category");
-    product.Category = GetCategory(db);
-    Console.WriteLine("Get quantity");
-    product.QuantityPerUnit = Console.ReadLine();
-    Console.WriteLine("Unit price");
-    product.UnitPrice = int.Parse(Console.ReadLine());
-    Console.WriteLine("units on order");
-    product.UnitsOnOrder = (short?)int.Parse(Console.ReadLine());
-    Console.WriteLine("reorderLevel");
-    product.ReorderLevel = short.Parse(Console.ReadLine());
-    Console.WriteLine("Discontinued (y/n)");
-    product.Discontinued = Console.ReadLine() == "y" ? true : false;
+    Product product = AddProduct(db, logger);
+    db.AddProduct(product);
 
 
-
-    ValidationContext context = new ValidationContext(product, null, null);
-
-    List<ValidationResult> results = new List<ValidationResult>();
-    var isValid = Validator.TryValidateObject(product, context, results, true);
-    if (isValid)
-    {
-      //var db = new DataContext();
-      // check for unique name
-      if (db.Products.Any(c => c.ProductName == product.ProductName))
-      {
-        // generate validation error
-        isValid = false;
-        results.Add(new ValidationResult("Name exists", ["ProductName"]));
-      }
-      else
-      {
-        logger.Info("Validation passed");
-
-        db.AddProduct(product);
-      }
-    }
-    if (!isValid)
-    {
-      foreach (var result in results)
-      {
-        logger.Error($"{result.MemberNames.First()} : {result.ErrorMessage}");
-      }
-    }
   }
+
+
   else if (choice == "3")
   {
     Console.WriteLine("choose the product you want to edit");
@@ -152,7 +111,12 @@ do
     var supplierName = db.Suppliers.FirstOrDefault(s => s.SupplierId == product.SupplierId).CompanyName;
     var CatagoryName = db.Categories.FirstOrDefault(s => s.CategoryId == product.CategoryId).CategoryName;
     Console.WriteLine(product.ProductName + "\nSupplier: " + supplierName
-    + "\nCategory: " + CatagoryName);
+    + "\nCategory: " + CatagoryName
+    + "\nQuantity: " + product.QuantityPerUnit
+    + "\nUnit Price: " + product.UnitPrice
+    + "\nUnits in stock: " + product.UnitsInStock
+    + "\nReorder Level: " + product.ReorderLevel
+    + "\nDiscontinued: " + (product.Discontinued ? "yes" : "no"));
 
   }
   else if (String.IsNullOrEmpty(choice))
