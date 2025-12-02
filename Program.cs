@@ -22,7 +22,7 @@ do
   Console.WriteLine("1) Display products");
   Console.WriteLine("2) Add product");
   Console.WriteLine("3) Edit product");
-  Console.WriteLine("4) Select Specific Product");
+  Console.WriteLine("4) Display Specific Product");
   Console.WriteLine("Enter to quit");
   string? choice = Console.ReadLine();
   Console.Clear();
@@ -75,6 +75,7 @@ do
     // Add category
     Product product = AddProduct(db, logger);
     db.AddProduct(product);
+    logger.Info($"Product {product.ProductName} successfully added");
 
 
   }
@@ -117,6 +118,7 @@ do
     + "\nUnits in stock: " + product.UnitsInStock
     + "\nReorder Level: " + product.ReorderLevel
     + "\nDiscontinued: " + (product.Discontinued ? "yes" : "no"));
+    logger.Info("Product succesfully displayed");
 
   }
   else if (String.IsNullOrEmpty(choice))
