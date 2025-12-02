@@ -37,10 +37,17 @@ public partial class DataContext : DbContext
 
     public void EditProduct(Product UpdatedProduct)
   {
-    Product product = Products.Find(UpdatedProduct.ProductId)!;
-    product.ProductName = UpdatedProduct.ProductName;
+        Product product = Products.Find(UpdatedProduct.ProductId)!;
+        product.ProductName = UpdatedProduct.ProductName;
+        product.Supplier = UpdatedProduct.Supplier;
+        product.Category = UpdatedProduct.Category;
+        product.QuantityPerUnit = UpdatedProduct.QuantityPerUnit;
+        product.UnitPrice = UpdatedProduct.UnitPrice;
+        product.UnitsInStock = UpdatedProduct.UnitsInStock;
+        product.ReorderLevel = UpdatedProduct.ReorderLevel;
+        product.Discontinued = UpdatedProduct.Discontinued;
     // todo finish this constructur thign
-    this.SaveChanges();
+        this.SaveChanges();
   }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

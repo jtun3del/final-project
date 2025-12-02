@@ -109,7 +109,7 @@ do
       else
       {
         logger.Info("Validation passed");
-        // TODO: save category to db
+        
         db.AddProduct(product);
             }
         }
@@ -126,10 +126,12 @@ do
     Console.WriteLine("choose the product you want to edit");
     var db = new DataContext();
     var product = GetProduct(db);
+    Product UpdatedProduct = AddProduct(db, logger);
     if (product != null)
     {
-      AddProduct(product, db, logger);
-      logger.Info("Product added");
+      UpdatedProduct.ProductId = product.ProductId;
+      db.EditProduct(UpdatedProduct);
+      logger.Info($"Product (id: {product.ProductId}) updated");
     }
        
     }
@@ -203,8 +205,9 @@ static Product? GetProduct(DataContext db)
   return null;
 }
 
-static Product? AddProduct(Product product,DataContext db,NLog.Logger logger)
+static Product? AddProduct(DataContext db,NLog.Logger logger)
 {
+  Product product = new();
   Console.WriteLine("Enter Product Name:");
     product.ProductName = Console.ReadLine()!;
     Console.WriteLine("Enter the Supplier:");
@@ -238,8 +241,8 @@ static Product? AddProduct(Product product,DataContext db,NLog.Logger logger)
       else
       {
         logger.Info("Validation passed");
-        // TODO: save category to db
-        db.AddProduct(product);
+        
+        
             }
         }
         if (!isValid)
