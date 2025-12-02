@@ -46,7 +46,7 @@ public partial class DataContext : DbContext
         product.UnitsInStock = UpdatedProduct.UnitsInStock;
         product.ReorderLevel = UpdatedProduct.ReorderLevel;
         product.Discontinued = UpdatedProduct.Discontinued;
-    // todo finish this constructur thign
+    
         this.SaveChanges();
   }
 

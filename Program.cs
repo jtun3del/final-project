@@ -22,22 +22,22 @@ do
   Console.WriteLine("1) Display products");
   Console.WriteLine("2) Add product");
   Console.WriteLine("3) Edit product");
-  Console.WriteLine("4) Display all Categories and their related products");
+  Console.WriteLine("4) Select Specific Product");
   Console.WriteLine("Enter to quit");
   string? choice = Console.ReadLine();
   Console.Clear();
   logger.Info("Option {choice} selected", choice);
-    if (choice == "1")
-    {
-        // display categories
-        var configuration = new ConfigurationBuilder()
-                .AddJsonFile($"appsettings.json");
-        var config = configuration.Build();
-        var db = new DataContext();
-        var query = db.Products.OrderBy(p => p.ProductName);
-        var discontinuedQuery = query.Where(p => p.Discontinued == true);
-        var activeQuery = query.Where(p => p.Discontinued == false);
-        Console.WriteLine("1 for active, 2 for discontinued, 3 for both");
+  if (choice == "1")
+  {
+    // display categories
+    var configuration = new ConfigurationBuilder()
+            .AddJsonFile($"appsettings.json");
+    var config = configuration.Build();
+    var db = new DataContext();
+    var query = db.Products.OrderBy(p => p.ProductName);
+    var discontinuedQuery = query.Where(p => p.Discontinued == true);
+    var activeQuery = query.Where(p => p.Discontinued == false);
+    Console.WriteLine("1 for active, 2 for discontinued, 3 for both");
     var selection = int.Parse(Console.ReadLine());
     if (selection == 1 || selection == 3)
     {
@@ -65,13 +65,13 @@ do
     {
       logger.Error("Not either 1, 2, or 3");
     }
-        Console.ForegroundColor = ConsoleColor.White;
-    }
-    else if (choice == "2")
-    {
+    Console.ForegroundColor = ConsoleColor.White;
+  }
+  else if (choice == "2")
+  {
 
     var db = new DataContext();
-        // Add category
+    // Add category
     Product product = new();
     Console.WriteLine("Enter Product Name:");
     product.ProductName = Console.ReadLine()!;
@@ -88,16 +88,16 @@ do
     Console.WriteLine("reorderLevel");
     product.ReorderLevel = short.Parse(Console.ReadLine());
     Console.WriteLine("Discontinued (y/n)");
-    product.Discontinued = Console.ReadLine() == "y" ? true : false; 
+    product.Discontinued = Console.ReadLine() == "y" ? true : false;
 
 
 
-        ValidationContext context = new ValidationContext(product, null, null);
+    ValidationContext context = new ValidationContext(product, null, null);
 
-        List<ValidationResult> results = new List<ValidationResult>();
-        var isValid = Validator.TryValidateObject(product, context, results, true);
-        if (isValid)
-        {
+    List<ValidationResult> results = new List<ValidationResult>();
+    var isValid = Validator.TryValidateObject(product, context, results, true);
+    if (isValid)
+    {
       //var db = new DataContext();
       // check for unique name
       if (db.Products.Any(c => c.ProductName == product.ProductName))
@@ -109,20 +109,20 @@ do
       else
       {
         logger.Info("Validation passed");
-        
+
         db.AddProduct(product);
-            }
-        }
-        if (!isValid)
-        {
-            foreach (var result in results)
-            {
-                logger.Error($"{result.MemberNames.First()} : {result.ErrorMessage}");
-            }
-        }
+      }
     }
-    else if (choice == "3")
+    if (!isValid)
     {
+      foreach (var result in results)
+      {
+        logger.Error($"{result.MemberNames.First()} : {result.ErrorMessage}");
+      }
+    }
+  }
+  else if (choice == "3")
+  {
     Console.WriteLine("choose the product you want to edit");
     var db = new DataContext();
     var product = GetProduct(db);
@@ -133,11 +133,11 @@ do
       db.EditProduct(UpdatedProduct);
       logger.Info($"Product (id: {product.ProductId}) updated");
     }
-       
-    }
+
+  }
   else if (choice == "4")
   {
-    var db = new DataContext();
+    /*var db = new DataContext(); //Used in part 2
     var query = db.Categories.Include("Products").OrderBy(p => p.CategoryId);
     foreach (var item in query)
     {
@@ -146,12 +146,19 @@ do
       {
         Console.WriteLine($"\t{p.ProductName}");
       }
-    }
+    }*/
+    DataContext db = new DataContext();
+    var product = GetProduct(db);
+    var supplierName = db.Suppliers.FirstOrDefault(s => s.SupplierId == product.SupplierId).CompanyName;
+    var CatagoryName = db.Categories.FirstOrDefault(s => s.CategoryId == product.CategoryId).CategoryName;
+    Console.WriteLine(product.ProductName + "\nSupplier: " + supplierName
+    + "\nCategory: " + CatagoryName);
+
   }
-    else if (String.IsNullOrEmpty(choice))
-    {
-        break;
-    }
+  else if (String.IsNullOrEmpty(choice))
+  {
+    break;
+  }
   Console.WriteLine();
 } while (true);
 
