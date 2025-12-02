@@ -35,6 +35,21 @@ public partial class DataContext : DbContext
         this.SaveChanges();
         }
 
+    public void EditProduct(Product UpdatedProduct)
+  {
+        Product product = Products.Find(UpdatedProduct.ProductId)!;
+        product.ProductName = UpdatedProduct.ProductName;
+        product.Supplier = UpdatedProduct.Supplier;
+        product.Category = UpdatedProduct.Category;
+        product.QuantityPerUnit = UpdatedProduct.QuantityPerUnit;
+        product.UnitPrice = UpdatedProduct.UnitPrice;
+        product.UnitsInStock = UpdatedProduct.UnitsInStock;
+        product.ReorderLevel = UpdatedProduct.ReorderLevel;
+        product.Discontinued = UpdatedProduct.Discontinued;
+    
+        this.SaveChanges();
+  }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Category>(entity =>
